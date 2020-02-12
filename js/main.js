@@ -3,22 +3,20 @@ let particles = [];
 // function preload() {
 //   img = loadImage('/el.png');
 // }
-
 const controls = {
-  velocityScale: 1
+    velocityScale: 1,
+    edgeMode: 'bounce'
 }
-
 // Runs once when your sketch loads
 function setup(){
   createCanvas( windowWidth, windowHeight ); // maximise canvas space!
   background( 0 );  // black background (greyscale)
   colorMode( HSB, 255 ); // Use Hue, Saturation, Brightness, range of 0..255
   // imageMode(CENTER);
-
   // add a control panel
   const gui = new dat.GUI();
-  gui.add(  );
-
+  gui.add( controls, 'velocityScale', -1, 1 );
+  gui.add( controls, 'edgeMode', ['bounce', 'wrap']);
   // stroke( 255, 0, 0 );  // outline colour R,G,B
   //
   // line(
@@ -42,7 +40,7 @@ function setup(){
 } // setup()
 // Runs once every screen refresh, ideally 60 times per second
 function draw(){
-  if( ! keyIsDown(CONTROL) ){
+  if(!keyIsDown(CONTROL)) {
     background(0); // clear the screen each draw!
   }
   // stroke(
@@ -73,7 +71,7 @@ function draw(){
   const vx = mouseX - pwinMouseX + random( [-4, 4] );  // mouse x velocity (speed)
   const vy = mouseY - pwinMouseY + random( [-4, 4] );  // mouse y velocity
   const size = map( mouseY,  0, windowHeight,  50, 200 );
-  if( mouseIsPressed || keyIsDown(SHIFT) ){
+  if( keyIsDown(SHIFT) ){
     // ellipse( mouseX, mouseY,  size, size );
     particles.push({
       x: mouseX,
@@ -90,16 +88,27 @@ function updateParticles(){
   for( let i = 0; i < particles.length; i++ ){
     const p = particles[i];
     // Update the particle position by adding the velocity values to it
-    p.x += p.vx;
-    p.y += p.vy;
-    if( p.x >= windowWidth || p.x <= 0 ){
-      p.vx *= -0.8;
+    p.x += p.vx * controls.velocityScale;
+    p.y += p.vy * controls.velocityScale;
+    if(controls.edgeMode === 'bounce') {
+        if( p.x >= windowWidth || p.x <= 0 ){
+            p.vx *= -1;
+          }
+          if( p.y >= windowHeight || p.y <= 0 ){
+              p.vy *= -1;
+          }
+    } else {
+        if(p.x >= windowWidth) {
+            p.x = 0;
+        } else if(p.x <= 0) {
+            p.x = windowWidth;
+        }
+        if( p.y >= windowHeight ) {
+            p.y = 0;
+        } else if( p.y <= 0 ) {
+            p.y = windowHeight;
+        }
     }
-
-    if( p.y >= windowHeight || p.y <= 0){
-      p.vy *= -0.8;
-    }
-
     fill(p.hue, 255, 255, 200);
     ellipse(p.x, p.y, p.size, p.size);
   }
