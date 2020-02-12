@@ -5,7 +5,8 @@ let particles = [];
 // }
 const controls = {
     velocityScale: 1,
-    edgeMode: 'bounce'
+    edgeMode: 'bounce',
+    distanceThreshold: 300
 }
 // Runs once when your sketch loads
 function setup(){
@@ -17,6 +18,7 @@ function setup(){
   const gui = new dat.GUI();
   gui.add( controls, 'velocityScale', -1, 1 );
   gui.add( controls, 'edgeMode', ['bounce', 'wrap']);
+  gui.add( controls, 'distanceThreshold', 0, 1000)
   // stroke( 255, 0, 0 );  // outline colour R,G,B
   //
   // line(
@@ -109,6 +111,28 @@ function updateParticles(){
             p.y = windowHeight;
         }
     }
+
+    for (var j = 0; j < particles.length; j++) {
+      const other = particles[j];
+
+      // Calculate the distance between these two particles, p and other;
+      const xDist = p.x - other.x;
+      const yDist = p.y - other.y;
+
+      const distance = Math.sqrt( xDist*xDist + yDist*yDist);
+
+      if( distance < controls.distanceThreshold ){
+
+        // The opacity of the line is 'inversely proportional' to the distance angleBetween
+        // the partic,es i.e. the closer they are, the more opaque (less transparent) it is
+        const alpha = map( distance, 0, controls.distanceThreshold, 255, 0 );
+
+        stroke( p.hue, 255, 255, alpha )
+        line( p.x, p.y, other.x, other.y );
+      }
+
+    } // inner for
+
     fill(p.hue, 255, 255, 200);
     ellipse(p.x, p.y, p.size, p.size);
   }
